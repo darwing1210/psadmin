@@ -1,7 +1,8 @@
 "use strict";
 
 var React = require('react');
-var AuthorApi = require('../../api/authorApi');
+var AuthorActions = require('../../actions/authorActions');
+var AuthorStore = require('../../stores/authorStore');
 var AuthorList = require('./authorsList');
 var Router = require('react-router');
 var Link = Router.Link;
@@ -9,14 +10,22 @@ var Link = Router.Link;
 var AuthorPage = React.createClass({
 	getInitialState: function() {
 		return {
-			authors: []  
+			authors: AuthorStore.getAllAuthors()  
 		};
 	},
 
-	componentDidMount: function() {
-		if (this.isMounted()) { // just to make sure
-			this.setState({ authors: AuthorApi.getAllAuthors() });
-		}
+	// componentWillMount, componentWillUnmount will Tell the store that we make a change using _onChange
+	componentWillMount: function() {
+		AuthorStore.addChangeListener(this._onChange);
+	},
+
+	// Clean up when this component is unmounted
+	componentWillUnmount: function() {
+		AuthorStore.removeChangeListener(this._onChange);
+	},
+
+	_onChange: function() {
+		this.setState({ authors: AuthorStore.getAllAuthors() });
 	},
 
 	render: function() {
